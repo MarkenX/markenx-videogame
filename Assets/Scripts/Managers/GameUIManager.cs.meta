@@ -1,2 +1,37 @@
 fileFormatVersion: 2
 guid: 1873b2da617f4724e84384bb35419670
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - panelConsumidor: {instanceID: 0}
+  - panelAtributos: {instanceID: 0}
+  - panelExploracion: {instanceID: 0}
+  - panelPublicidad: {instanceID: 0}
+  - panelPerfil: {instanceID: 0}
+  - textoTurno: {instanceID: 0}
+  - textoNoticia: {instanceID: 0}
+  - textoPresupuesto: {instanceID: 0}
+  - sliderAceptacion: {instanceID: 0}
+  - buttonEnviar: {instanceID: 0}
+  - panelContenedorAtributos: {instanceID: 0}
+  - panelDetalleAccion: {instanceID: 0}
+  - botonCategoriaProduccion: {instanceID: 0}
+  - botonCategoriaDiseno: {instanceID: 0}
+  - botonCategoriaPrecio: {instanceID: 0}
+  - botonCategoriaPlaza: {instanceID: 0}
+  - panelContenedorExploracion: {instanceID: 0}
+  - panelContenedorPublicidad: {instanceID: 0}
+  - textNombreAccion: {instanceID: 0}
+  - textDescripAccion: {instanceID: 0}
+  - textPrecioAccion: {instanceID: 0}
+  - botonInvertir: {instanceID: 0}
+  - textNombrePerfil: {instanceID: 0}
+  - textEdadPerfil: {instanceID: 0}
+  - sliderPerfil: {instanceID: 0}
+  - prefabHexagono: {fileID: 3156115038714908173, guid: 09cd1cbf77f1082418a57f1fd4026da9, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,47 +1,83 @@
 using System.Collections.Generic;
 
-// [System.Serializable]
-// Le dice a Unity que esta clase puede ser convertida a/desde JSON.
-
-// 1. MODELOS PARA ENVIAR (Request)
-
 [System.Serializable]
-public class DecisionRequest
+public class Accion
 {
-    public int idProducto;
-    public int idPrecio;
-    public int idPlaza;
-    public int idPromocion;
+    public int idAccion;
+    public string categoria; // ATRIBUTOS_PRODUCCION, EXPLORACION, etc.
+    public string nombreAccion;
+    public string descripcion;
+    public float costo;
+    public bool esBloqueadaInicialmente; // Para árbol de habilidades
+    public int idAccionRequerida; // El ID de la acción que desbloquea esta
 }
 
 [System.Serializable]
-public class ContextoFactor
+public class Subfactor
 {
+    public int idSubfactor;
+    public string factorPrincipal; // CULTURAL, SOCIAL, etc.
     public string detalle;
-    public string importancia;
 }
 
 [System.Serializable]
-public class ContextoRequest
+public class EscenarioPerfilSubfactor
 {
-    public List<ContextoFactor> macroentorno;
-    public List<ContextoFactor> perfilConsumidor;
+    public int idSubfactor;
+    public float peso;
+    public bool esVisibleInicialmente; // Si es 'false', se muestra como "???"
 }
 
 [System.Serializable]
-public class SimulationRequest
+public class AccionSubfactorImpacto
 {
-    public DecisionRequest decision;
-    public ContextoRequest contexto;
+    public int idAccion;
+    public int idSubfactor;
+    public int impacto;
 }
 
-
-// 2. MODELOS PARA RECIBIR (Response)
+[System.Serializable]
+public class Evento
+{
+    public int idEvento;
+    public string detalleNoticia;
+}
 
 [System.Serializable]
-public class SimulationResponse
+public class EventoEfecto
 {
-    public float nivelAceptacion; // 95.0
-    public int puntaje;           // 950
-    public string feedback;       // "¡Excelente!..."
+    public int idEvento;
+    public int idSubfactor;
+    public float modificadorPeso;
+}
+
+// CLASE "CONTENEDORA" QUE SE RECIBE DEL BACKEND
+// Contiene todas las reglas para UNA partida.
+[System.Serializable]
+public class PartidaDataPayload
+{
+    public int presupuestoInicial;
+    public float aceptacionObjetivo;
+    public string nombreConsumidor;
+    public int edadConsumidor;
+
+    public List<Accion> accionesDisponibles;
+    public List<EscenarioPerfilSubfactor> perfilConsumidor;
+    public List<AccionSubfactorImpacto> reglasImpacto;
+    public List<Evento> eventosPosibles;
+    public List<EventoEfecto> efectosEventos;
+    
+    public List<Turno> historialTurnos;
+}
+
+// Modelo para el historial de turnos
+[System.Serializable]
+public class Turno
+{
+    // Se omite idTurno e idPartida, ya que el backend los asignará
+    public int numeroTurno;
+    public float aceptacionTurno;
+    public string retroalimentacionIA;
+    public string eventoNoticiaOcurrido;
+    public List<int> decisionesAccion; // Lista de idAccion tomadas en el turno
 }
