@@ -89,7 +89,7 @@ public class GameSceneManager : MonoBehaviour
         }
     }
 
-    // --- MÉTODOS PÚBLICOS (Llamados por la UI) ---
+    // MÉTODOS PÚBLICOS
 
     public PartidaDataPayload GetPartidaData() => partidaData;
     public int GetPresupuestoActual() => presupuestoActual;
@@ -210,7 +210,7 @@ public class GameSceneManager : MonoBehaviour
     {
         if (Random.Range(0f, 1f) <= probabilidadEventoNoticia)
         {
-            // ¡Ocurre un evento!
+            // Ocurre un evento
             var evento = partidaData.eventosPosibles[Random.Range(0, partidaData.eventosPosibles.Count)];
             var efectos = partidaData.efectosEventos.Where(e => e.idEvento == evento.idEvento);
 
@@ -219,7 +219,7 @@ public class GameSceneManager : MonoBehaviour
                 var factorEnPerfil = perfilActualizado.Find(p => p.idSubfactor == efecto.idSubfactor);
                 if (factorEnPerfil != null) 
                 {
-                    // Modifica el peso del perfil *actualizado*
+                    // Modifica el peso del perfil
                     factorEnPerfil.peso += efecto.modificadorPeso;
                     Debug.Log($"Evento afectó a {factorEnPerfil.idSubfactor}, nuevo peso: {factorEnPerfil.peso}");
                 }
