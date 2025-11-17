@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 216f9bcead34ce14f9a12783361f1813
+guid: 65797306d05303649b57ce60176f89a4
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4832392703241667962
-    second: Captura de pantalla 2025-11-11 114625_0
+      213: 202179015294972509
+    second: C_Feliz_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Captura de pantalla 2025-11-11 114625_0
+      name: C_Feliz_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 331
-        height: 436
+        width: 864
+        height: 1184
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a75c8eb7f8b101340800000000000000
-      internalID: 4832392703241667962
+      spriteID: d52f1b34eb84ec200800000000000000
+      internalID: 202179015294972509
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Captura de pantalla 2025-11-11 114625_0: 4832392703241667962
+      C_Feliz_0: 202179015294972509
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

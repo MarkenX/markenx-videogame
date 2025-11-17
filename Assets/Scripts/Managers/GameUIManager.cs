@@ -73,7 +73,7 @@ public class GameUIManager : MonoBehaviour
         botonCategoriaProduccion.onClick.AddListener(() => PoblarPanelAcciones("ATRIBUTOS_PRODUCCION"));
         botonCategoriaDiseno.onClick.AddListener(() => PoblarPanelAcciones("ATRIBUTOS_DISENO"));
         botonCategoriaPrecio.onClick.AddListener(() => PoblarPanelAcciones("ATRIBUTOS_PRECIO"));
-        // botonCategoriaPlaza.onClick.AddListener(() => PoblarPanelAcciones("ATRIBUTOS_PLAZA")); // Cuando lo agregues
+        botonCategoriaPlaza.onClick.AddListener(() => PoblarPanelAcciones("ATRIBUTOS_PLAZA"));
 
         // 3. Ocultar todos los paneles y mostrar el de consumidor
         ShowPanelConsumidor();
@@ -264,34 +264,62 @@ public class GameUIManager : MonoBehaviour
         if (panelPerfil != null) panelPerfil.SetActive(false);
     }
 
+    // ANIMACIÓN EN PANELES
+    public void AnimatePanelOpening(GameObject panel)
+    {
+        panel.SetActive(true);
+        panel.transform.localScale = Vector3.zero;
+        StartCoroutine(PopUpAnimation(panel.transform));
+    }
+
+    IEnumerator PopUpAnimation(Transform target)
+    {
+        float timer = 0;
+        float duration = 0.3f;
+        
+        // Efecto "Overshoot"
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            float progress = timer / duration;
+            
+            // Curva de animación simple
+            float scale = Mathf.Sin(progress * Mathf.PI * 0.5f) * 1.1f; 
+            if (scale > 1f) scale = 1f;
+
+            target.localScale = Vector3.one * scale;
+            yield return null;
+        }
+        target.localScale = Vector3.one;
+    }
     public void ShowPanelConsumidor()
     {
         OcultarTodosLosPaneles();
-        if (panelConsumidor != null) panelConsumidor.SetActive(true);
+        if (panelConsumidor != null) AnimatePanelOpening(panelConsumidor);
     }
 
     public void ShowPanelAtributos()
     {
         OcultarTodosLosPaneles();
-        if (panelAtributos != null) panelAtributos.SetActive(true);
+        if (panelAtributos != null) AnimatePanelOpening(panelAtributos);
     }
 
     public void ShowPanelExploracion()
     {
         OcultarTodosLosPaneles();
-        if (panelExploracion != null) panelExploracion.SetActive(true);
+        if (panelExploracion != null) AnimatePanelOpening(panelExploracion);
     }
 
     public void ShowPanelPublicidad()
     {
         OcultarTodosLosPaneles();
-        if (panelPublicidad != null) panelPublicidad.SetActive(true);
+        if (panelPublicidad != null) AnimatePanelOpening(panelPublicidad);
     }
 
     public void ShowPanelPerfil()
     {
         OcultarTodosLosPaneles();
-        if (panelPerfil != null) panelPerfil.SetActive(true);
+        if (panelPerfil != null) AnimatePanelOpening(panelPerfil);
     }
 
     // FUNCIONES DE BOTONES SUPERIORES
