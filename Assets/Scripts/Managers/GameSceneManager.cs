@@ -3,14 +3,14 @@ using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine.Networking;
-using System.Linq; // ¡¡MUY IMPORTANTE para .Find, .Where, .Sum!!
+using System.Linq;
 
 public class GameSceneManager : MonoBehaviour
 {
-    // --- SINGLETON ---
+    // SINGLETON
     public static GameSceneManager Instance { get; private set; }
 
-    // --- ESTADO DEL JUEGO (DATOS VIVOS) ---
+    // ESTADO DEL JUEGO
     private int presupuestoActual;
     private float aceptacionActual;
     private int turnoActual;
@@ -19,20 +19,20 @@ public class GameSceneManager : MonoBehaviour
     private List<Turno> historialTurnos = new List<Turno>();
     private List<Accion> accionesCompradasEsteTurno = new List<Accion>();
 
-    // --- Lógica de Lógica de Árbol de Habilidades y Perfil ---
+    // LÓGICA DE ÁRBOL DE HABILIDADES Y PERFIL
     private HashSet<int> accionesDesbloqueadas = new HashSet<int>();
     private HashSet<int> subfactoresDescubiertos = new HashSet<int>();
 
-    // --- REGLAS DEL JUEGO (CARGADAS AL INICIO) ---
+    // REGLAS DEL JUEGO (CARGADAS AL INICIO)
     private PartidaDataPayload partidaData; 
 
-    // --- CONEXIÓN BACKEND (COLABORADOR) ---
+    // CONEXIÓN BACKEND
     private string apiUrl_CargarPartida = "http://URL_BACKEND/api/partida/iniciar";
     private string apiUrl_GuardarPartida = "http://URL_BACKEND/api/partida/guardar";
 
     [Header("Configuración de Juego")]
     [Range(0f, 1f)]
-    public float probabilidadEventoNoticia = 0.25f; // 25% de chance por turno
+    public float probabilidadEventoNoticia = 0.25f;
 
 
     void Awake()
@@ -165,7 +165,7 @@ public class GameSceneManager : MonoBehaviour
         }
     }
 
-    // --- EL "CEREBRO" (IA LOCAL) ---
+    // IA LOCAL)
 
     private float CalcularAceptacionLocal()
     {
@@ -188,10 +188,10 @@ public class GameSceneManager : MonoBehaviour
                 }
             }
         }
-        return aceptacionActual + aceptacionTotalTurno; // Acumulativo
+        return aceptacionActual + aceptacionTotalTurno;
     }
 
-    // LOGICA NIVEL PERFIL (Helper)
+    // LOGICA NIVEL PERFIL
     private void DescubrirNuevoFactor()
     {
         // Encuentra el primer factor en el perfil que AÚN NO esté en el HashSet de descubiertos
@@ -230,7 +230,7 @@ public class GameSceneManager : MonoBehaviour
     }
 
 
-    // --- FIN DE PARTIDA ---
+    // FIN DE PARTIDA
 
     private void GuardarTurnoActual(float aceptacion, string noticia)
     {
@@ -276,7 +276,7 @@ public class GameSceneManager : MonoBehaviour
         }
     }
 
-    // --- Métodos de carga de escena (movidos aquí) ---
+    // Métodos de carga de escena
     public void LoadScene(string sceneName) {
         SceneManager.LoadScene(sceneName);
     }
