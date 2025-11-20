@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class ReporteManager : MonoBehaviour
 {
@@ -12,6 +13,10 @@ public class ReporteManager : MonoBehaviour
     public Slider sliderAceptacion;
     public TextMeshProUGUI textoPorcentajePerfil;
     public Slider sliderPerfil;
+
+    [Header("Botones")]
+    public Button botonGrafico;
+    public Button botonSalir;
 
     void Start()
     {
@@ -27,15 +32,14 @@ public class ReporteManager : MonoBehaviour
         if (textoTurno != null) textoTurno.text = "TURNO: " + turno.ToString();
         if (textoPresupuesto != null) textoPresupuesto.text = "PRESUPUESTO: " + presupuesto.ToString() + "$";
         
+        if (textoPorcentajeAceptacion) textoPorcentajeAceptacion.text = "ACEPTACIÓN: " + (aceptacion * 100).ToString("F0") + "%";
         if (sliderAceptacion != null) sliderAceptacion.value = aceptacion;
+        if (textoPorcentajePerfil) textoPorcentajePerfil.text = "PERFIL: " + (perfil * 100).ToString("F0") + "%";
         if (sliderPerfil != null) sliderPerfil.value = perfil;
 
-        // 3. (Opcional) Actualizar los textos de porcentaje
-        if (textoPorcentajeAceptacion != null)
-            textoPorcentajeAceptacion.text = "ACEPTACIÓN: " + (aceptacion * 100).ToString("F0") + "%";
-        
-        if (textoPorcentajePerfil != null)
-            textoPorcentajePerfil.text = "PERFIL: " + (perfil * 100).ToString("F0") + "%";
+        // CONECTAR BOTONES
+        if (botonGrafico) botonGrafico.onClick.AddListener(() => SceneManager.LoadScene("GraficoScene"));
+        if (botonSalir) botonSalir.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
     }
 
 }

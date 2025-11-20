@@ -1,4 +1,424 @@
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine.SceneManagement;
+
+public class GameUIManager : MonoBehaviour
+{
+    [Header("Paneles Principales")]
+    public GameObject panelConsumidor;
+    public GameObject panelAtributos;
+    public GameObject panelExploracion;
+    public GameObject panelPublicidad;
+    public GameObject panelPerfil;
+    public GameObject panelNoticiaOverlay;
+
+    [Header("Alertas")]
+    public GameObject alertaPerfil;
+
+    [Header("Elementos UI Estado")]
+    public TextMeshProUGUI textoTurno;
+    public TextMeshProUGUI textoPresupuesto;
+    public TextMeshProUGUI textoNoticiaTopBar;
+    public Image imagenPersonaje;
+    public Sprite spriteNormal;
+    public Sprite spriteFeliz;
+
+
+    [Header("Presupuesto (Multiples sitios)")]
+    public TextMeshProUGUI textoPresupuestoPrincipal; // Group_Consumidor
+    public List<TextMeshProUGUI> textosPresupuestoPaneles; // Los textos dentro de los Button_Cash de cada panel
+
+    [Header("Sliders con Porcentaje")]
+    public Slider sliderAceptacion;
+    public TextMeshProUGUI textoPorcentajeAceptacion;
+    public Slider sliderPerfil;
+    public TextMeshProUGUI textoPorcentajePerfil;
+
+    [Header("Noticia Overlay")]
+    public TextMeshProUGUI textoNoticiaTitulo;
+    public TextMeshProUGUI textoNoticiaCuerpo;
+    public Button botonCerrarNoticia;
+
+    [Header("Contenedores Hexágonos")]
+    public Transform contenedorAtributos;
+    public Transform contenedorExploracion;
+    public Transform contenedorPublicidad;
+    
+    [Header("Botones Categoría (Atributos)")]
+    public Button botonCategoriaProduccion; 
+    public Button botonCategoriaDiseno;
+    public Button botonCategoriaPrecio;
+    public Button botonCategoriaPlaza;
+
+    [Header("Detalle Acción")]
+    public GameObject panelDetalle;
+    public TextMeshProUGUI detalleNombre;
+    public TextMeshProUGUI detalleDescrip;
+    public TextMeshProUGUI detallePrecio;
+    public Button botonInvertir;
+
+    [Header("Perfil UI")]
+    public TextMeshProUGUI perfilNombre;
+    public TextMeshProUGUI perfilEdad;
+    public List<TextMeshProUGUI> textosFactores;
+
+    [Header("Control Final")]
+    public Button buttonEnviar;
+    public TextMeshProUGUI textoBotonEnviar; // Para cambiar a "TERMINAR"
+
+    [Header("Recursos")]
+    public GameObject hexagonoPrefab;
+    public string escenaMainMenu = "MainMenu";
+
+    private GameSceneManager manager;
+    private Accion accionSeleccionada;
+    private int factoresDescubiertosPrevios = 0;
+
+    void Start()
+    {
+        manager = GameSceneManager.Instance;
+        if (manager == null) return;
+
+        // --- CONEXIÓN SEGURA DE BOTONES DE ACCIÓN ---
+        if (botonInvertir != null) 
+        {
+            botonInvertir.onClick.RemoveAllListeners(); // Limpia por si acaso
+            botonInvertir.onClick.AddListener(OnInvertirClick);
+        }
+        else Debug.LogError("FALTA ASIGNAR: Boton Invertir en el Inspector");
+
+        if (buttonEnviar != null) 
+        {
+            buttonEnviar.onClick.RemoveAllListeners();
+            buttonEnviar.onClick.AddListener(OnEnviarTurnoClick);
+        }
+        else Debug.LogError("FALTA ASIGNAR: Button Enviar en el Inspector");
+
+        // Guardar estado inicial de factores para saber si hay nuevos
+        factoresDescubiertosPrevios = manager.GetSubfactoresDescubiertos().Count;
+
+        // 1. Configurar Botones de Categoría
+        if (botonCategoriaProduccion != null) botonCategoriaProduccion.onClick.AddListener(() => PoblarPanelAcciones("ATRIBUTOS_PRODUCCION"));
+        if (botonCategoriaDiseno != null) botonCategoriaDiseno.onClick.AddListener(() => PoblarPanelAcciones("ATRIBUTOS_DISENO"));
+        if (botonCategoriaPrecio != null) botonCategoriaPrecio.onClick.AddListener(() => PoblarPanelAcciones("ATRIBUTOS_PRECIO"));
+        if (botonCategoriaPlaza != null) botonCategoriaPlaza.onClick.AddListener(() => PoblarPanelAcciones("ATRIBUTOS_PLAZA"));
+
+        if(botonCerrarNoticia) botonCerrarNoticia.onClick.AddListener(CerrarNoticiaOverlay);
+        
+        // 2. Estado inicial de paneles
+        OcultarTodosLosPaneles();
+        if (panelConsumidor != null) panelConsumidor.SetActive(true);
+        if (panelDetalle != null) panelDetalle.SetActive(false);
+        if (panelNoticiaOverlay != null) panelNoticiaOverlay.SetActive(false);
+        if (alertaPerfil != null) alertaPerfil.SetActive(false); // Alerta apagada al inicio
+        
+        // 3. Generar Hexágonos iniciales
+        // (Se generan una vez en sus contenedores y luego solo se actualiza su estado visual)
+        GenerarHexagonos("ATRIBUTOS_PRODUCCION", contenedorAtributos);
+        GenerarHexagonos("ATRIBUTOS_DISENO", contenedorAtributos); // Se añaden al mismo
+        GenerarHexagonos("ATRIBUTOS_PRECIO", contenedorAtributos);
+        GenerarHexagonos("ATRIBUTOS_PLAZA", contenedorAtributos);
+        GenerarHexagonos("EXPLORACION", contenedorExploracion);
+        GenerarHexagonos("PUBLICIDAD", contenedorPublicidad);
+
+        // 4. Inicializar UI con datos
+        ActualizarEstadoUI();
+        PoblarPerfil();
+
+        // 5. Forzar visualización inicial de Producción
+        PoblarPanelAcciones("ATRIBUTOS_PRODUCCION");
+    }
+
+    // LÓGICA DE GENERACIÓN
+
+    void GenerarHexagonos(string categoria, Transform contenedor)
+    {
+        if (contenedor == null) return;
+
+        var acciones = manager.GetPartidaData().accionesDisponibles
+                       .Where(a => a.categoria == categoria).ToList();
+
+        foreach (var acc in acciones)
+        {
+            GameObject hex = Instantiate(hexagonoPrefab, contenedor);
+            AccionButton btn = hex.GetComponent<AccionButton>();
+            if(btn != null) btn.Inicializar(acc, this);
+            
+            // Se crean desactivados. 'PoblarPanelAcciones' los activará.
+            // Solo para atributos. Para Exploración y Publicidad los activamos directo.
+            if (contenedor == contenedorAtributos)
+                hex.SetActive(false);
+            else
+                hex.SetActive(true);
+        }
+    }
+    
+    // Esta función filtra qué hexágonos se ven en el panel compartido (Atributos)
+    void PoblarPanelAcciones(string categoriaMostrar)
+    {
+        if (contenedorAtributos == null) return;
+
+        foreach (Transform child in contenedorAtributos)
+        {
+            AccionButton btn = child.GetComponent<AccionButton>();
+            if (btn != null)
+            {
+                // 1. Decidir si se muestra este hexágono (si es de la categoría correcta)
+                bool coincide = (btn.GetAccionCategoria() == categoriaMostrar);
+                child.gameObject.SetActive(coincide);
+
+                // Si se lo va a mostrar, se debe actualizar su color.
+                if (coincide)
+                {
+                    bool desbloqueada = manager.IsAccionDesbloqueada(btn.GetAccionID());
+                    bool comprada = manager.IsAccionComprada(btn.GetAccionID());
+                    btn.ActualizarVisual(desbloqueada, comprada);
+                }
+            }
+        }
+    }
+
+    // ACTUALIZACIÓN DE UI
+
+    public void ActualizarEstadoUI()
+    {
+        // 1. Textos Generales
+        if (textoTurno) textoTurno.text = "TURNO " + manager.GetTurnoActual();
+        
+        string presupuestoStr = "$" + manager.GetPresupuestoActual();
+        if (textoPresupuestoPrincipal) textoPresupuestoPrincipal.text = presupuestoStr;
+        // Actualizar TODOS los botones de Cash en sub-paneles
+        foreach(var texto in textosPresupuestoPaneles) {
+            if(texto != null) texto.text = presupuestoStr;
+        }
+
+        // 2. Sliders y Porcentajes
+        float aceptacion = manager.GetAceptacionActual();
+        if (sliderAceptacion) sliderAceptacion.value = aceptacion / 100f;
+        if (textoPorcentajeAceptacion) textoPorcentajeAceptacion.text = aceptacion.ToString("F0") + "%";
+
+        float nivelPerfil = manager.GetNivelPerfil();
+        if (sliderPerfil) sliderPerfil.value = nivelPerfil;
+        if (textoPorcentajePerfil) textoPorcentajePerfil.text = (nivelPerfil * 100).ToString("F0") + "%";
+
+        // 3. Estado del Personaje y Botón Final
+        if (aceptacion >= 80)
+        {
+            if (imagenPersonaje) imagenPersonaje.sprite = spriteFeliz;
+            if (textoBotonEnviar) textoBotonEnviar.text = "TERMINAR";
+        }
+        else
+        {
+            if (imagenPersonaje) imagenPersonaje.sprite = spriteNormal;
+            if (textoBotonEnviar) textoBotonEnviar.text = "ENVIAR";
+        }
+
+        // 4. Alerta de Perfil (Lógica)
+        int factoresAhora = manager.GetSubfactoresDescubiertos().Count;
+        if (factoresAhora > factoresDescubiertosPrevios)
+        {
+            if (alertaPerfil) alertaPerfil.SetActive(true); // ENCENDER ALERTA
+            factoresDescubiertosPrevios = factoresAhora;
+        }
+
+        // 5. Noticia
+        string tituloNoticia = manager.GetNoticiaTitulo();
+        if (!string.IsNullOrEmpty(tituloNoticia))
+        {
+            if (textoNoticiaTopBar) textoNoticiaTopBar.text = tituloNoticia;
+            if (panelNoticiaOverlay && !panelNoticiaOverlay.activeSelf && manager.GetTurnoActual() == 3) {
+                 panelNoticiaOverlay.SetActive(true);
+                 if (textoNoticiaTitulo) textoNoticiaTitulo.text = tituloNoticia;
+                 if (textoNoticiaCuerpo) textoNoticiaCuerpo.text = manager.GetNoticiaDetalle();
+             }
+        }
+        else { if (textoNoticiaTopBar) textoNoticiaTopBar.text = "SIN NOTICIAS"; }
+        
+        ActualizarEstadoHexagonos();
+        PoblarPerfil();
+    }
+
+    void ActualizarEstadoHexagonos()
+    {
+        var botones = FindObjectsByType<AccionButton>(FindObjectsSortMode.None);
+        foreach(var btn in botones)
+        {
+            bool desbloqueada = manager.IsAccionDesbloqueada(btn.GetAccionID());
+            bool comprada = manager.IsAccionComprada(btn.GetAccionID());
+            btn.ActualizarVisual(desbloqueada, comprada); // Actualizado para manejar comprados
+        }
+    }
+
+    void PoblarPerfil()
+    {
+        var data = manager.GetPartidaData();
+        if (perfilNombre != null) perfilNombre.text = data.nombreConsumidor;
+        if (perfilEdad != null) perfilEdad.text = data.edadConsumidor + " AÑOS";
+
+        // Mapeo para Demo
+        SetTextoFactor(0, 100, "SUBCULTURA: ECOLÓGICO");
+        SetTextoFactor(1, 200, "OCUPACIÓN: PILOTO");
+        SetTextoFactor(2, 300, "ESTILO: MINIMALISTA");
+        SetTextoFactor(3, 400, "MOTIVACIÓN: AHORRO");
+    }
+
+    void SetTextoFactor(int indexUI, int idFactor, string textoReal)
+    {
+        if (indexUI < textosFactores.Count)
+        {
+            if (manager.IsFactorDescubierto(idFactor))
+                textosFactores[indexUI].text = textoReal;
+            else
+                textosFactores[indexUI].text = "??";
+        }
+    }
+
+    // EVENTOS DE CLICK (UI)
+
+    public void OnHexagonoClick(Accion accion)
+    {
+        // SI YA SE COMPRÓ, NO HACER NADA (O SOLO MOSTRAR DETALLE SIN BOTÓN)
+        bool yaComprada = manager.IsAccionComprada(accion.idAccion);
+
+        accionSeleccionada = accion;
+        if (panelDetalle != null)
+        {
+            panelDetalle.SetActive(true);
+            if (detalleNombre != null) detalleNombre.text = accion.nombreAccion;
+            if (detalleDescrip != null) detalleDescrip.text = accion.descripcion;
+            if (detallePrecio != null) detallePrecio.text = "$" + accion.costo;
+            
+            // Validar compra
+            bool puedeComprar = manager.GetPresupuestoActual() >= accion.costo && manager.IsAccionDesbloqueada(accion.idAccion);
+            // BLOQUEAR SI YA SE COMPRÓ
+            if (botonInvertir) 
+            {
+                botonInvertir.interactable = puedeComprar && !yaComprada;
+                // Opcional: Cambiar texto a "COMPRADO"
+                var textoBtn = botonInvertir.GetComponentInChildren<TextMeshProUGUI>();
+                if(textoBtn) textoBtn.text = yaComprada ? "COMPRADO" : "INVERTIR";
+            }
+        }
+    }
+
+    public void OnInvertirClick()
+    {
+        if(accionSeleccionada != null)
+        {
+            if(manager.ComprarAccion(accionSeleccionada.idAccion))
+            {
+                if (panelDetalle != null) panelDetalle.SetActive(false);
+                ActualizarEstadoUI();
+            }
+        }
+    }
+
+    public void OnEnviarTurnoClick()
+    {
+        // LOGICA: SI ES > 80%, ESTE BOTÓN TERMINA EL JUEGO
+        if (manager.GetAceptacionActual() >= 80)
+        {
+            manager.EjecutarFinDeJuego("GANASTE");
+        }
+        else
+        {
+            manager.TerminarTurno();
+            ActualizarEstadoUI();
+        }
+    }
+
+    public void CerrarNoticiaOverlay()
+    {
+        if(panelNoticiaOverlay != null) panelNoticiaOverlay.SetActive(false);
+    }
+
+    public void ShowPanelPerfil()
+    {
+        OcultarTodosLosPaneles();
+        if (panelPerfil != null) AnimatePanelOpening(panelPerfil);
+        
+        // APAGAR ALERTA AL ENTRAR
+        if (alertaPerfil != null) alertaPerfil.SetActive(false);
+    }
+
+    // FUNCIONES DE NAVEGACIÓN Y ANIMACIÓN
+
+    private void OcultarTodosLosPaneles()
+    {
+        if (panelConsumidor != null) panelConsumidor.SetActive(false);
+        if (panelAtributos != null) panelAtributos.SetActive(false);
+        if (panelExploracion != null) panelExploracion.SetActive(false);
+        if (panelPublicidad != null) panelPublicidad.SetActive(false);
+        if (panelPerfil != null) panelPerfil.SetActive(false);
+        
+        // Ocultar detalle al cambiar de pestaña
+        if (panelDetalle != null) panelDetalle.SetActive(false);
+    }
+
+    // Animación simple
+    public void AnimatePanelOpening(GameObject panel)
+    {
+        panel.SetActive(true);
+        panel.transform.localScale = Vector3.zero;
+        StartCoroutine(PopUpAnimation(panel.transform));
+    }
+
+    IEnumerator PopUpAnimation(Transform target)
+    {
+        float timer = 0;
+        float duration = 0.2f;
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            float progress = timer / duration;
+            float scale = Mathf.Sin(progress * Mathf.PI * 0.5f); 
+            target.localScale = Vector3.one * scale;
+            yield return null;
+        }
+        target.localScale = Vector3.one;
+    }
+
+    public void ShowPanelConsumidor()
+    {
+        OcultarTodosLosPaneles();
+        if (panelConsumidor != null) AnimatePanelOpening(panelConsumidor);
+    }
+
+    public void ShowPanelAtributos()
+    {
+        OcultarTodosLosPaneles();
+        if (panelAtributos != null) AnimatePanelOpening(panelAtributos);
+        // Asegurar que se vean los hexágonos correctos
+        PoblarPanelAcciones("ATRIBUTOS_PRODUCCION");
+    }
+
+    public void ShowPanelExploracion()
+    {
+        OcultarTodosLosPaneles();
+        if (panelExploracion != null) AnimatePanelOpening(panelExploracion);
+    }
+
+    public void ShowPanelPublicidad()
+    {
+        OcultarTodosLosPaneles();
+        if (panelPublicidad != null) AnimatePanelOpening(panelPublicidad);
+    }
+    
+    // Botones TopBar
+    public void BotonPausa() { Debug.Log("Pausa"); }
+    public void BotonInicio() { ShowPanelConsumidor(); }
+    public void BotonIrAMenu() { SceneManager.LoadScene(escenaMainMenu); }
+}
+
+
+/* =================================================================================
+   CÓDIGO ANTIGUO (COMENTADO)
+   =================================================================================
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
@@ -342,3 +762,4 @@ public class GameUIManager : MonoBehaviour
         SceneManager.LoadScene(escenaMainMenu);
     }
 }
+================================================================================= */

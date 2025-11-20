@@ -7,46 +7,43 @@ public class AccionButton : MonoBehaviour
     private Accion miAccion;
     private GameUIManager uiManager;
 
-    [Header("Prefab Components")]
-    public Button botonComponent;
-    public Image imagenFondo; // El hexágono
-    
-    //public TextMeshProUGUI textoNombre;
-    //public Image icono;
+    public Button miBoton;
+    //public TextMeshProUGUI miTexto;
+    public Image miImagenFondo;
 
-    // Colores para el estado
-    public Color colorDesbloqueado = Color.white;
+    // Colores (Asegúrate de configurarlos en el Inspector del Prefab si quieres)
     public Color colorBloqueado = Color.gray;
+    public Color colorDisponible = Color.white;
+    public Color colorComprado = new Color(0.5f, 1f, 0.5f); // Verde claro
 
-    // El UIManager llama a esta función cuando crea el botón
     public void Inicializar(Accion accion, GameUIManager manager)
     {
         miAccion = accion;
         uiManager = manager;
-
-        // if (textoNombre != null) textoNombre.text = miAccion.nombreAccion;
-
-        // Añade el listener (la acción de click)
-        botonComponent.onClick.RemoveAllListeners();
-        botonComponent.onClick.AddListener(OnClick);
+        //if(miTexto != null) miTexto.text = accion.nombreAccion;
+        
+        miBoton.onClick.RemoveAllListeners();
+        miBoton.onClick.AddListener(() => uiManager.OnHexagonoClick(miAccion));
     }
 
-    // Esta función se ejecuta cuando el jugador hace click en este hexágono
-    private void OnClick()
+    // ESTA ES LA FUNCIÓN QUE DABA ERROR. AHORA ACEPTA 2 ARGUMENTOS.
+    public void ActualizarVisual(bool desbloqueada, bool comprada)
     {
-        uiManager.OnAccionClicked(miAccion);
+        miBoton.interactable = true; // Siempre clickable para ver info
+
+        if (miImagenFondo != null)
+        {
+            if (comprada)
+            {
+                miImagenFondo.color = colorComprado;
+            }
+            else
+            {
+                miImagenFondo.color = desbloqueada ? colorDisponible : colorBloqueado;
+            }
+        }
     }
 
-    // El UIManager llama a esto para actualizar el estado visual
-    public void ActualizarEstado(bool desbloqueado)
-    {
-        botonComponent.interactable = desbloqueado;
-        imagenFondo.color = desbloqueado ? colorDesbloqueado : colorBloqueado;
-        //icono.color = desbloqueado ? colorDesbloqueado : colorBloqueado;
-    }
-
-    public int GetAccionID()
-    {
-        return miAccion.idAccion;
-    }
+    public int GetAccionID() => miAccion.idAccion;
+    public string GetAccionCategoria() => miAccion.categoria;
 }

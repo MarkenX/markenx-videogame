@@ -25,18 +25,22 @@ public class MainMenu : MonoBehaviour
             return;
         }
 
-        // 2. Asignar las funciones a los botones
-        if (buttonIniciar != null)
+        // CHEQUEAR SI EL JUEGO YA TERMINÓ
+        if (GameSceneManager.Instance.juegoTerminado)
         {
-            buttonIniciar.interactable = true;
-            buttonIniciar.onClick.AddListener(OnIniciarPartida);
-            //if (textoEstado != null) textoEstado.text = "Listo para iniciar.";
+            if(buttonIniciar) buttonIniciar.interactable = false;
+            //if(textoEstado) textoEstado.text = "Asignación completada.";
         }
-
-        if (buttonSalir != null)
+        else
         {
-            buttonSalir.onClick.AddListener(OnSalirDelJuego);
+            if(buttonIniciar) 
+            {
+                buttonIniciar.interactable = true;
+                buttonIniciar.onClick.AddListener(OnIniciarPartida);
+            }
         }
+        
+        if (buttonSalir) buttonSalir.onClick.AddListener(OnSalirDelJuego);
     }
 
     public void OnIniciarPartida()
