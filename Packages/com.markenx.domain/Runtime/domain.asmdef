@@ -1,0 +1,7 @@
+{
+  "name": "MyProject.Domain",
+  "rootNamespace": "MyProject.Domain",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": []
+}

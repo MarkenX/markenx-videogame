@@ -67,5 +67,6 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "udla-markenx-videogame.slnx"
+    "dotnet.defaultSolution": "udla-markenx-videogame.slnx",
+    "dotnet.preferCSharpExtension": true
 }

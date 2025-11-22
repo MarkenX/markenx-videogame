@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.myproject.domain": {
+      "version": "file:com.markenx.domain",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.2d.animation": {
       "version": "12.0.2",
       "depth": 0,

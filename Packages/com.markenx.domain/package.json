@@ -1,0 +1,9 @@
+{
+  "name": "com.myproject.domain",
+  "version": "1.0.0",
+  "displayName": "My Project Domain",
+  "description": "Domain layer of the project using DDD principles.",
+  "unity": "2021.3",
+  "author": "MarkenX",
+  "dependencies": {}
+}
