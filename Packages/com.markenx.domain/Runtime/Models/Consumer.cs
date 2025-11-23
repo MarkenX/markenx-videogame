@@ -1,3 +1,5 @@
+using System;
+
 public class Consumer
 {
   private readonly NationalIdentityDocument _nationalIdentityDocument;
