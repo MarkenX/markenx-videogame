@@ -1,10 +1,12 @@
+using System;
+
 public class NationalIdentityDocument
 {
   private readonly string _firstName;
   private readonly string _lastName;
-  private readonly PersonAge _age;
+  private readonly DateTime _birthDate;
 
   public string FirstName { get { return _firstName; } }
   public string LastName { get { return _lastName; } }
-  public PersonAge Age { get { return _age; } }
+  public DateTime BirthDate { get { return _birthDate; } }
 }
