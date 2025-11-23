@@ -1,4 +1,4 @@
-public abstract class Person
+public class NationalIdentityDocument
 {
   private readonly string _firstName;
   private readonly string _lastName;
