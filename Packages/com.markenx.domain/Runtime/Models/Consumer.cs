@@ -1,4 +1,6 @@
 public class Consumer : Person
 {
-  public PersonAge age;
+  private readonly decimal _monthlyIncome;
+
+  public decimal MonthlyIncome { get { return _monthlyIncome; } }
 }
