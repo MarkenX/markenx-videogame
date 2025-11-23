@@ -1,11 +1,14 @@
 public class Product
 {
+  private readonly ProductCategory _category;
   private readonly float _price;
 
-  public Product(float price)
+  public Product(ProductCategory category, float price)
   {
+    _category = category;
     _price = price;
   }
 
-  public float Price { get { return _price; } }
+  public ProductCategory Category => _category;
+  public float Price => _price;
 }
