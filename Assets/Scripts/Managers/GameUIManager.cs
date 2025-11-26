@@ -64,7 +64,10 @@ public class GameUIManager : MonoBehaviour
     public List<TextMeshProUGUI> textosPresupuestoPaneles; 
 
     [Header("Alertas")]
-    public GameObject alertaPerfil; 
+    public GameObject alertaPerfil;
+    public GameObject panelAdvertencia;
+    public TextMeshProUGUI textoAdvertenciaCuerpo;
+    public Button botonCerrarAdvertencia;
 
     [Header("Recursos")]
     public GameObject hexagonoPrefab;
@@ -87,6 +90,8 @@ public class GameUIManager : MonoBehaviour
         if(botonCategoriaPlaza) botonCategoriaPlaza.onClick.AddListener(() => PoblarPanelAcciones("ATRIBUTOS_PLAZA"));
         
         if(botonCerrarNoticia) botonCerrarNoticia.onClick.AddListener(CerrarNoticiaOverlay);
+        if(botonCerrarAdvertencia) 
+            botonCerrarAdvertencia.onClick.AddListener(() => panelAdvertencia.SetActive(false));
         
         if (botonInvertir) {
             botonInvertir.onClick.RemoveAllListeners();
@@ -102,6 +107,7 @@ public class GameUIManager : MonoBehaviour
         if (panelDetalle) panelDetalle.SetActive(false);
         if (panelNoticiaOverlay) panelNoticiaOverlay.SetActive(false);
         if (alertaPerfil) alertaPerfil.SetActive(false);
+        if (panelAdvertencia) panelAdvertencia.SetActive(false);
 
         GenerarHexagonosEnContenedor("ATRIBUTOS_PRODUCCION", contenedorAtributos);
         GenerarHexagonosEnContenedor("ATRIBUTOS_DISENO", contenedorAtributos);
@@ -147,7 +153,8 @@ public class GameUIManager : MonoBehaviour
 
     public void ActualizarEstadoUI()
     {
-        if (textoTurno) textoTurno.text = "TURNO " + manager.GetTurnoActual();
+        if (textoTurno) 
+            textoTurno.text = $"Turno Actual: {manager.GetTurnoActual()}\nPermitidos: {GameSceneManager.MAX_TURNOS}";
         string presu = "$" + manager.GetPresupuestoActual();
         if (textoPresupuesto) textoPresupuesto.text = presu;
         if (textoPresupuestoPrincipal) textoPresupuestoPrincipal.text = presu;
@@ -265,11 +272,30 @@ public class GameUIManager : MonoBehaviour
 
     public void OnEnviarTurnoClick()
     {
+        // Si ya ganó, termina.
         if (manager.GetAceptacionActual() >= 80)
+        {
             manager.EjecutarFinDeJuego("GANASTE");
-        else {
-            manager.TerminarTurno();
-            ActualizarEstadoUI();
+        }
+        else 
+        {
+            // Se intenta terminar el turno
+            string errorMsg;
+            bool exito = manager.TerminarTurno(out errorMsg);
+
+            if (exito)
+            {
+                ActualizarEstadoUI();
+            }
+            else
+            {
+                // Mostrar Advertencia si falló
+                if (panelAdvertencia != null)
+                {
+                    panelAdvertencia.SetActive(true);
+                    if (textoAdvertenciaCuerpo) textoAdvertenciaCuerpo.text = errorMsg;
+                }
+            }
         }
     }
 

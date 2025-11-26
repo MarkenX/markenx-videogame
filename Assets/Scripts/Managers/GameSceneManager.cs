@@ -103,14 +103,25 @@ public class GameSceneManager : MonoBehaviour
         return false;
     }
 
-    public void TerminarTurno()
+    public const int MAX_TURNOS = 5;
+    public bool TerminarTurno(out string mensajeError)
     {
+        // 1. VALIDACIÓN
+        if (accionesCompradas.Count == 0)
+        {
+            mensajeError = "¡Debes comprar al menos una acción antes de enviar el turno!";
+            return false; // Cancela el avance
+        }
+
+        mensajeError = "";
+
+        // 2. Cálculo Normal
         RecalcularAceptacion();
         
-        // Evento Simulado en Turno 2
+        // Evento Simulado (Turno 2 -> 3)
         if (turnoActual == 2)
         {
-            noticiaTituloActual = "EL MUNDO SE VUELVE MÁS VERDE";
+            noticiaTituloActual = "El Mundo Se Vuelve Más Verde";
             noticiaDetalleActual = "Impulso global por la sostenibilidad gana fuerza.";
             
             // Efecto en el consumidor
@@ -125,6 +136,15 @@ public class GameSceneManager : MonoBehaviour
         }
 
         turnoActual++;
+
+        // 3. VERIFICAR DERROTA (Por Turnos o Presupuesto)
+        // Si se acabó el dinero O se acabaron los turnos y no ganó... PIERDE.
+        if (context.Presupuesto <= 0 || (turnoActual > MAX_TURNOS && aceptacionActual < context.AceptacionObjetivo))
+        {
+            EjecutarFinDeJuego("PERDISTE");
+        }
+
+        return true; // Éxito
     }
 
     private void RecalcularAceptacion()
