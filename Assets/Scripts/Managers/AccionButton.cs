@@ -8,7 +8,7 @@ public class AccionButton : MonoBehaviour
     private GameUIManager uiManager;
 
     public Button miBoton;
-    public TextMeshProUGUI miTexto;
+    //public TextMeshProUGUI miTexto;
     public Image miImagenFondo;
 
     public Color colorBloqueado = Color.gray;
@@ -19,7 +19,7 @@ public class AccionButton : MonoBehaviour
     {
         miAccion = accion;
         uiManager = manager;
-        if(miTexto != null) miTexto.text = accion.nombreAccion;
+        //if(miTexto != null) miTexto.text = accion.nombreAccion;
         
         miBoton.onClick.RemoveAllListeners();
         miBoton.onClick.AddListener(() => uiManager.OnHexagonoClick(miAccion));
