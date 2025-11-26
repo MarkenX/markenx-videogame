@@ -46,7 +46,7 @@ public class GameSceneManager : MonoBehaviour
         yield return new WaitForSeconds(0.1f);
         context = MockDataFactory.GetEcoGameContext();
         InicializarEstado();
-        SceneManager.LoadScene("GameScene");
+        LoadScene("GameScene");
     }
 
     void InicializarEstado()
@@ -142,7 +142,7 @@ public class GameSceneManager : MonoBehaviour
         GameState.ultimoTurno = turnoActual;
         GameState.nivelPerfil = GetNivelPerfil();
         
-        SceneManager.LoadScene("EndGameScene");
+        LoadScene("EndGameScene");
     }
 
     // GETTERS PARA UI
@@ -166,4 +166,16 @@ public class GameSceneManager : MonoBehaviour
     }
 
     public void QuitGame() { Application.Quit(); }
+
+    public void LoadScene(string sceneName)
+    {
+        if (SceneTransitionManager.Instance != null)
+        {
+            SceneTransitionManager.Instance.CargarEscena(sceneName);
+        }
+        else
+        {
+            SceneManager.LoadScene(sceneName);
+        }
+    }
 }
