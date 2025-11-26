@@ -58,7 +58,8 @@ public class GameSceneManager : MonoBehaviour
         noticiaTituloActual = "";
         noticiaDetalleActual = "";
 
-        RecalcularAceptacion();
+        aceptacionActual = 0f;
+        //RecalcularAceptacion();
 
         if (context.AccionesVisuales != null)
         {
