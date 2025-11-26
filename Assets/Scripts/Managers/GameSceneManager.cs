@@ -18,7 +18,8 @@ public class GameSceneManager : MonoBehaviour
 
     // UI State
     private HashSet<int> accionesDesbloqueadas = new HashSet<int>();
-    private HashSet<int> accionesCompradas = new HashSet<int>();
+    private HashSet<int> accionesCompradasTotal = new HashSet<int>();
+    private List<AccionInfo> accionesCompradasEsteTurno = new List<AccionInfo>();
     private HashSet<int> subfactoresDescubiertos = new HashSet<int>(); 
 
     // ESTADO GLOBAL PARA EL MENÚ
@@ -52,7 +53,8 @@ public class GameSceneManager : MonoBehaviour
     void InicializarEstado()
     {
         turnoActual = 1;
-        accionesCompradas.Clear();
+        accionesCompradasTotal.Clear();
+        accionesCompradasEsteTurno.Clear();
         accionesDesbloqueadas.Clear();
         subfactoresDescubiertos.Clear();
         noticiaTituloActual = "";
@@ -71,15 +73,16 @@ public class GameSceneManager : MonoBehaviour
     public bool ComprarAccion(int idAccion)
     {
         if (!accionesDesbloqueadas.Contains(idAccion)) return false;
-        if (accionesCompradas.Contains(idAccion)) return false;
+        if (accionesCompradasTotal.Contains(idAccion)) return false;
 
-        var infoVisual = context.AccionesVisuales.Find(a => a.idAccion == idAccion);
+        AccionInfo infoVisual = context.AccionesVisuales.Find(a => a.idAccion == idAccion);
         if (infoVisual == null) return false;
 
         if (context.Presupuesto >= infoVisual.costo)
         {
             context.Presupuesto -= infoVisual.costo;
-            accionesCompradas.Add(idAccion);
+            accionesCompradasEsteTurno.Add(infoVisual);
+            accionesCompradasTotal.Add(idAccion);
 
             // APLICAR EFECTO AL PRODUCTO
             if (context.ActionsMap.TryGetValue(idAccion, out MarketAction accionLogica))
@@ -107,7 +110,7 @@ public class GameSceneManager : MonoBehaviour
     public bool TerminarTurno(out string mensajeError)
     {
         // 1. VALIDACIÓN
-        if (accionesCompradas.Count == 0)
+        if (accionesCompradasEsteTurno.Count == 0)
         {
             mensajeError = "¡Debes comprar al menos una acción antes de enviar el turno!";
             return false; // Cancela el avance
@@ -136,12 +139,17 @@ public class GameSceneManager : MonoBehaviour
         }
 
         turnoActual++;
+        accionesCompradasEsteTurno.Clear();
 
         // 3. VERIFICAR DERROTA (Por Turnos o Presupuesto)
         // Si se acabó el dinero O se acabaron los turnos y no ganó... PIERDE.
-        if (context.Presupuesto <= 0 || (turnoActual > MAX_TURNOS && aceptacionActual < context.AceptacionObjetivo))
+        if (context.Presupuesto <= 0 || turnoActual > MAX_TURNOS)
         {
-            EjecutarFinDeJuego("PERDISTE");
+            // Si al final de los turnos no llegaste al objetivo, pierdes
+            if (aceptacionActual < context.AceptacionObjetivo)
+            {
+                EjecutarFinDeJuego("PERDISTE");
+            }
         }
 
         return true; // Éxito
@@ -174,7 +182,7 @@ public class GameSceneManager : MonoBehaviour
     public string GetNoticiaTitulo() => noticiaTituloActual;
     public string GetNoticiaDetalle() => noticiaDetalleActual;
     public bool IsAccionDesbloqueada(int id) => accionesDesbloqueadas.Contains(id);
-    public bool IsAccionComprada(int id) => accionesCompradas.Contains(id);
+    public bool IsAccionComprada(int id) => accionesCompradasTotal.Contains(id);
     public string GetNombreConsumidor() => context.NombreConsumidor;
     public int GetEdadConsumidor() => context.EdadConsumidor;
     public bool IsFactorDescubierto(int index) => subfactoresDescubiertos.Contains(index);
