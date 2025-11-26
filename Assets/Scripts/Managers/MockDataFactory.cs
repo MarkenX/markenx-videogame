@@ -24,7 +24,7 @@ public static class MockDataFactory
 
         ctx.NombreConsumidor = "Barry Seal";
         ctx.EdadConsumidor = 30;
-        ctx.Presupuesto = 1000;
+        ctx.Presupuesto = 1300;
         ctx.AceptacionObjetivo = 0.80f;
 
         // 3. CREAR PRODUCTO INICIAL
