@@ -22,28 +22,34 @@ public class ReporteManager : MonoBehaviour
 
     void Start()
     {
-        // DEBUG: Verificamos si llegan los datos
-        Debug.Log($"Resultados cargados: Aceptación {GameState.nivelAceptacion}, Presupuesto {GameState.presupuestoRestante}");
+        // 1. DIAGNÓSTICO DE DATOS
+        Debug.Log($"[REPORTE] Cargando datos de GameState...");
+        Debug.Log($"[REPORTE] Resultado: {GameState.resultadoJuego}");
+        Debug.Log($"[REPORTE] Presupuesto Final: {GameState.presupuestoRestante}");
+        Debug.Log($"[REPORTE] Aceptación Final: {GameState.nivelAceptacion}");
 
-        // 1. LEER DATOS
+        // 2. LEER DATOS
         string resultado = GameState.resultadoJuego;
         int turno = GameState.ultimoTurno;
         int presupuesto = GameState.presupuestoRestante;
-        float aceptacion = GameState.nivelAceptacion; // 0.0 a 1.0
-        float perfil = GameState.nivelPerfil;         // 0.0 a 1.0
+        float aceptacion = GameState.nivelAceptacion; 
+        float perfil = GameState.nivelPerfil;       
 
-        // 2. ACTUALIZAR UI (Validando nulos para evitar errores a medias)
-        if (textoResultado) textoResultado.text = resultado;
-        if (textoTurno) textoTurno.text = "TURNOS UTILIZADOS: " + (turno - 1); // Restamos 1 porque el turno avanza al terminar
-        if (textoPresupuesto) textoPresupuesto.text = "PRESUPUESTO: $" + presupuesto;
-        
-        if (sliderAceptacion) sliderAceptacion.value = aceptacion; // El slider va de 0 a 1
-        if (textoPorcentajeAceptacion) textoPorcentajeAceptacion.text = (aceptacion * 100).ToString("F0") + "%";
+        // 3. ACTUALIZAR UI (Con reporte de errores si falta algo)
+        if (textoResultado != null) textoResultado.text = resultado;
 
-        if (sliderPerfil) sliderPerfil.value = perfil;
-        if (textoPorcentajePerfil) textoPorcentajePerfil.text = (perfil * 100).ToString("F0") + "%";
+        if (textoTurno != null) textoTurno.text = "TURNOS: " + (turno - 1);
+
+        if (textoPresupuesto != null) textoPresupuesto.text = "PRESUPUESTO: $" + presupuesto;
         
-        // 3. CONECTAR BOTONES
+        if (sliderAceptacion != null) sliderAceptacion.value = aceptacion;
+
+        if (textoPorcentajeAceptacion != null) textoPorcentajeAceptacion.text = "Aceptación: " + (aceptacion * 100).ToString("F0") + "%";
+        
+        if (sliderPerfil != null) sliderPerfil.value = perfil;
+        if (textoPorcentajePerfil != null) textoPorcentajePerfil.text = "Perfil: " + (perfil * 100).ToString("F0") + "%";
+        
+        // 4. CONECTAR BOTONES
         if (botonGrafico) 
         {
             botonGrafico.onClick.RemoveAllListeners();
