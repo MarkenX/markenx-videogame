@@ -93,10 +93,10 @@ public class GameSceneManager : MonoBehaviour
             foreach (var h in hijos) accionesDesbloqueadas.Add(h.idAccion);
 
             // Exploración
-            if (idAccion == 13) subfactoresDescubiertos.Add(200); // Social
-            if (idAccion == 14) subfactoresDescubiertos.Add(100); // Cultural
-            if (idAccion == 15) subfactoresDescubiertos.Add(300); // Personal
-            if (idAccion == 16) subfactoresDescubiertos.Add(400); // Psicológico
+            if (idAccion == 40) subfactoresDescubiertos.Add(200); // Encuesta -> Social
+            if (idAccion == 41) subfactoresDescubiertos.Add(100); // Focus -> Cultural
+            if (idAccion == 42) subfactoresDescubiertos.Add(300); // Estilo -> Personal
+            if (idAccion == 43) subfactoresDescubiertos.Add(400); // Motivacion -> Psico
 
             return true;
         }

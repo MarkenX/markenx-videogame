@@ -14,6 +14,31 @@ public class AccionInfo
     public int idAccionRequerida; 
 }
 
+[System.Serializable]
+public class Evento
+{
+    public int idEvento;
+    public string tituloNoticia;
+    public string detalleNoticia;
+}
+
+[System.Serializable]
+public class EventoEfecto
+{
+    public int idEvento;
+    public int idSubfactor;
+    public float modificadorPeso;
+}
+
+[System.Serializable]
+public class Turno
+{
+    public int numeroTurno;
+    public float aceptacionTurno;
+    public string eventoNoticiaTitulo; // Para guardar en historial
+    public List<int> decisionesAccion;
+}
+
 public class GameContext
 {
     // Definiciones de Dimensiones
@@ -32,6 +57,10 @@ public class GameContext
     
     // Lista visual para la UI
     public List<AccionInfo> AccionesVisuales;
+
+    public List<Evento> eventosPosibles;
+    public List<EventoEfecto> efectosEventos;
+    public List<Turno> historialTurnos;
 
     // Configuración
     public float Presupuesto;
