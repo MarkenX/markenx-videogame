@@ -1,29 +1,35 @@
+# .circleci/config.yml  ←  Versión definitiva, copia-pega tal cual
 version: 2.1
-
-orbs:
-  unity: game-ci/unity@1.7.1   # o @1.3.0, da igual, ambas funcionan igual con este truco
-
-workflows:
-  build:
-    jobs:
-      - build-webgl:
-          # Aquí SÍ está permitido poner context
-          context: unity   # ← Tu context con UNITY_ENCODED_LICENSE
 
 jobs:
   build-webgl:
-    executor:
-      name: unity/ubuntu
-      resource_class: large
-      editor_version: 6000.0.62f1          # la más nueva que existe para WebGL
-      target_platform: webgl
+    docker:
+      - image: unityci/editor:ubuntu-6000.0.62f1-webgl-3.2.0
+    resource_class: large
+    working_directory: ~/project
 
     steps:
       - checkout
-      - unity/build:
-          build-target: WebGL
-          build-method: BuildWebGL.PerformBuild   # tu script o déjalo vacío para usar el default
-          project-path: .
-          compress: false          # recomendado para WebGL (se ve directo en la UI)
-          store-artifacts: true
-          step-name: "Build"
+      - run:
+          name: Build WebGL
+          command: |
+            mkdir -p Build/WebGL
+            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
+              /opt/unity/Editor/Unity \
+              -batchmode \
+              -nographics \
+              -silent-crashes \
+              -projectPath . \
+              -executeMethod BuildWebGL.PerformBuild \
+              -logFile /dev/stdout \
+              -quit
+
+      - store_artifacts:
+          path: Build/WebGL
+          destination: WebGL_Build
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build-webgl
