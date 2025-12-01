@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  unity: game-ci/unity@2.1.0
+  unity: game-ci/unity@1.7.1
 
 jobs:
   build-webgl:
