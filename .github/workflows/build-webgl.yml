@@ -1,8 +1,8 @@
-name: Build WebGL + ZIP (Personal license)
+name: Build WebGL
 
 on:
   push:
-    branches: [ ci/circleci-setup ]
+    branches: [ci/circleci-setup]
 
 jobs:
   build:
@@ -12,40 +12,43 @@ jobs:
         with:
           lfs: true
 
-      # Cache para que los siguientes builds sean 3-4× más rápidos
+      # Cache para que los siguientes builds vuelen
       - uses: actions/cache@v4
         with:
           path: Library
           key: Library-WebGL-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: Library-WebGL-
 
-      # Build con licencia Personal
+      # Build con licencia Personal (el secreto UNITY_LICENSE es obligatorio)
       - name: Build WebGL
         id: build
         uses: game-ci/unity-builder@v4
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }} # Contenido completo del .ulf (texto plano)
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           unityVersion: 6000.0.62f1
           targetPlatform: WebGL
 
-      # ZIP automático
+      # Crear ZIP con los primeros 8 caracteres del commit (nombre corto y limpio)
       - name: Crear ZIP
         run: |
           cd "${{ steps.build.outputs.buildPath }}"
-          zip -r ../WebGL_Build_${{ github.sha::8 }}.zip .
-          echo "ZIP listo → WebGL_Build_${{ github.sha::8 }}.zip"
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
+          zip -r "../WebGL_Build_${SHORT_SHA}.zip" .
+          echo "ZIP creado → WebGL_Build_${SHORT_SHA}.zip"
 
-      # Subir artefactos
+      # Subir el ZIP como artefacto principal
       - uses: actions/upload-artifact@v4
         with:
-          name: WebGL-Build-${{ github.sha::8 }}.zip
+          name: WebGL-Build-${{ github.sha | slice(0,8) }}.zip
           path: WebGL_Build_*.zip
           retention-days: 30
 
+      # Opcional: subir también la carpeta descomprimida
       - uses: actions/upload-artifact@v4
         with:
           name: WebGL-Raw-Files
           path: ${{ steps.build.outputs.buildPath }}
+          retention-days: 7
