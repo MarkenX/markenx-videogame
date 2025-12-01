@@ -5,10 +5,9 @@ orbs:
 
 jobs:
   build-webgl:
-    # Executor para WebGL
     executor:
       name: unity/ubuntu
-      resource_class: large  # RAM extra para IL2CPP WebGL
+      resource_class: large
       editor_version: 6000.2.10f1
       target_platform: webgl
 
@@ -19,10 +18,6 @@ jobs:
           build-method: BuildWebGL.PerformBuild
           project-path: .
           compress: true
-          
-          context: unity
-          unity-username-var-name: UNITY_USERNAME
-          unity-password-var-name: UNITY_PASSWORD
           step-name: Build WebGL
 
 workflows:
