@@ -34,7 +34,7 @@ jobs:
       - run:
           name: Run Unity WebGL Build
           command: |
-            docker run --rm -v ~/project:/root/project -v ~/project/Build:/root/build unity-webgl
+            docker run --rm --privileged -v ~/project:/root/project -v ~/project/Build:/root/build unity-webgl
 
       # Guardar el build como artefacto
       - store_artifacts:
