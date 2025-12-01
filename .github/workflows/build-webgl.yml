@@ -12,41 +12,42 @@ jobs:
         with:
           lfs: true
 
-      # Cache para que los siguientes builds vuelen
+      # Cache para que los siguientes builds sean mucho más rápidos
       - uses: actions/cache@v4
         with:
           path: Library
           key: Library-WebGL-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: Library-WebGL-
 
-      # Build con licencia Personal (el secreto UNITY_LICENSE es obligatorio)
+      # Build WebGL con licencia Personal
       - name: Build WebGL
         id: build
         uses: game-ci/unity-builder@v4
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }} # Contenido completo del .ulf (texto plano)
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}      # ← Contenido del .ulf (texto plano)
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           unityVersion: 6000.0.62f1
           targetPlatform: WebGL
 
-      # Crear ZIP con los primeros 8 caracteres del commit (nombre corto y limpio)
-      - name: Crear ZIP
+      # Crear ZIP con SHA corto (8 caracteres)
+      - name: Crear ZIP con SHA corto
         run: |
           cd "${{ steps.build.outputs.buildPath }}"
-          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-8)
+          SHORT_SHA=${{ github.sha }}
+          SHORT_SHA=${SHORT_SHA:0:8}
           zip -r "../WebGL_Build_${SHORT_SHA}.zip" .
-          echo "ZIP creado → WebGL_Build_${SHORT_SHA}.zip"
+          echo "ZIP creado: WebGL_Build_${SHORT_SHA}.zip"
 
-      # Subir el ZIP como artefacto principal
+      # Subir el ZIP (nombre limpio y corto)
       - uses: actions/upload-artifact@v4
         with:
-          name: WebGL-Build-${{ github.sha | slice(0,8) }}.zip
+          name: WebGL-Build-${{ github.sha }}
           path: WebGL_Build_*.zip
           retention-days: 30
 
-      # Opcional: subir también la carpeta descomprimida
+      # Opcional: subir también la carpeta sin comprimir
       - uses: actions/upload-artifact@v4
         with:
           name: WebGL-Raw-Files
