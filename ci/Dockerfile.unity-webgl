@@ -1,18 +1,26 @@
-FROM unityci/editor:6000.2.10f1-webgl
+# Base Unity Editor sin módulos
+FROM unityci/editor:6000.2.10f1
 
-# Copiamos proyecto
-WORKDIR /root/project
+# Variables de entorno
+ENV UNITY_PROJECT_PATH=/root/project
+ENV BUILD_OUTPUT=/root/build
+
+# Instalar módulo WebGL una sola vez (capa de caché)
+RUN unityhub install-modules --version 6000.2.10f1 --module webgl
+
+# Carpeta del proyecto
+WORKDIR $UNITY_PROJECT_PATH
 COPY . .
 
-# Carpeta de build
-RUN mkdir -p /root/build
+# Carpeta de salida
+RUN mkdir -p $BUILD_OUTPUT
 
-# Ejecutar build
+# Comando por defecto para build
 CMD /opt/unity/Editor/Unity \
     -batchmode \
     -nographics \
     -silent-crashes \
-    -projectPath /root/project \
+    -projectPath $UNITY_PROJECT_PATH \
     -executeMethod BuildWebGL.PerformBuild \
     -logFile /dev/stdout \
     -quit
