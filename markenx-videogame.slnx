@@ -1,0 +1,5 @@
+﻿<Solution>
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="MyProject.Domain.csproj" />
+  <Project Path="Tests.csproj" />
+</Solution>
