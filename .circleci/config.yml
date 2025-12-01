@@ -1,48 +1,48 @@
 version: 2.1
 
 jobs:
-  build-webgl:
+  build_webgl:
     docker:
-      - image: unityci/editor:6000.2.10f1-webgl
-    working_directory: /root/project
-    environment:
-      UNITY_BUILD_TARGET: WebGL
-      BUILD_OUTPUT: /root/build
+      - image: cimg/base:stable
+    working_directory: ~/project
     steps:
       - checkout
 
-      # Instalar dependencias si es necesario (npm, dotnet, etc)
-      # - run: apt-get update && apt-get install -y <paquetes>
+      # Configurar Docker remoto para builds de Unity
+      - setup_remote_docker:
+          docker_layer_caching: true
 
-      # Mostrar versión de Unity y verificar WebGL
+      # Restaurar caché de Docker (opcional para builds repetidos)
+      - restore_cache:
+          keys:
+            - docker-layer-cache-{{ checksum "Dockerfile" }}
+            - docker-layer-cache-
+
+      # Construir la imagen Docker con Unity + WebGL
       - run:
-          name: Show Unity Version
+          name: Build Docker container
           command: |
-            /opt/unity/Editor/Unity -batchmode -quit -version
-            /opt/unity/Editor/Unity -batchmode -quit -projectPath /root/project -executeMethod BuildWebGL.PerformBuild -logFile /dev/stdout
+            docker build -t unity-webgl .
 
-      # Ejecutar build
-      - run:
-          name: Build WebGL
-          command: |
-            mkdir -p $BUILD_OUTPUT
-            /opt/unity/Editor/Unity \
-              -batchmode \
-              -nographics \
-              -silent-crashes \
-              -projectPath /root/project \
-              -executeMethod BuildWebGL.PerformBuild \
-              -logFile /dev/stdout \
-              -quit
-
-      # Guardar artifacts
-      - persist_to_workspace:
-          root: $BUILD_OUTPUT
+      # Guardar la capa de Docker en caché
+      - save_cache:
+          key: docker-layer-cache-{{ checksum "Dockerfile" }}
           paths:
-            - .
+            - /var/lib/docker
+
+      # Ejecutar el build dentro del contenedor
+      - run:
+          name: Run Unity WebGL Build
+          command: |
+            docker run --rm -v ~/project:/root/project -v ~/project/Build:/root/build unity-webgl
+
+      # Guardar el build como artefacto
+      - store_artifacts:
+          path: Build/WebGL
+          destination: WebGL_Build
 
 workflows:
   version: 2
-  build-and-store:
+  build_and_store:
     jobs:
-      - build-webgl
+      - build_webgl
