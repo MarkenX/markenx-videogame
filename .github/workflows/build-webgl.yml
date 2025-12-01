@@ -1,0 +1,49 @@
+# .github/workflows/build-webgl.yml
+name: Build WebGL
+
+on:
+  push:
+    branches: [ci/circleci-setup]
+
+jobs:
+  build-and-zip:
+    runs-on: ubuntu-latest
+    name: Build WebGL → ZIP
+    steps:
+      # 1. Descargar el código (incluyendo LFS)
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      # 2. Build con game-ci
+      - name: Build WebGL
+        id: buildStep
+        uses: game-ci/unity-builder@v5
+        env:
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          unityVersion: 6000.0.62f1
+          targetPlatform: WebGL
+
+      # 3.zip automático
+      - name: Comprimir build a .zip
+        run: |
+          cd "${{ steps.buildStep.outputs.buildPath }}"
+          zip -r ../WebGL_Build_${{ github.sha }}.zip .
+          echo "Zip creado: WebGL_Build_${{ github.sha }}.zip"
+
+      # 4. Subir el .zip como artefacto descargable
+      - name: Subir artefacto ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: WebGL-Build-${{ github.sha }}
+          path: WebGL_Build_*.zip
+          if-no-files-found: error
+
+      # Bonus: también subir la carpeta descomprimida (por si alguien la quiere)
+      - name: Subir carpeta WebGL (opcional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: WebGL-Files-Raw
+          path: ${{ steps.buildStep.outputs.buildPath }}
