@@ -19,11 +19,19 @@ RUN apt-get update && apt-get install -y \
     libxinerama1 \
     libxi6 \
     ca-certificates \
+    gpg \
+    apt-transport-https \
     && rm -rf /var/lib/apt/lists/*
 
 # Unity version
 ENV UNITY_VERSION=6000.2.10f1
 ENV UNITY_MODULES=WebGL
+
+# Instalar Unity Hub desde el repositorio oficial
+RUN wget -qO - https://hub.unity3d.com/linux/keys/public | gpg --dearmor > /usr/share/keyrings/unityhub.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/unityhub.gpg] https://hub.unity3d.com/linux/repos/deb stable main" > /etc/apt/sources.list.d/unityhub.list \
+    && apt-get update \
+    && apt-get install -y unityhub
 
 # Directorio del proyecto
 WORKDIR /root/project
@@ -33,14 +41,6 @@ COPY . .
 
 # Carpeta donde se generará el build
 RUN mkdir -p /root/build
-
-# Descargar y extraer Unity Hub AppImage SIN FUSE
-RUN wget -q https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage -O /tmp/unityhub.AppImage \
-    && chmod +x /tmp/unityhub.AppImage \
-    && cd /tmp && ./unityhub.AppImage --appimage-extract \
-    && mv /tmp/squashfs-root /opt/unityhub \
-    && ln -s /opt/unityhub/AppRun /usr/local/bin/unityhub \
-    && rm /tmp/unityhub.AppImage
 
 # Instalar Unity Editor usando Unity Hub
 RUN unityhub -- --headless install --version $UNITY_VERSION --changeset d3d30d158480 --childModules $UNITY_MODULES
