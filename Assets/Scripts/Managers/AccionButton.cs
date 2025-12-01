@@ -4,19 +4,18 @@ using TMPro;
 
 public class AccionButton : MonoBehaviour
 {
-    private Accion miAccion;
+    private AccionInfo miAccion;
     private GameUIManager uiManager;
 
     public Button miBoton;
     //public TextMeshProUGUI miTexto;
     public Image miImagenFondo;
 
-    // Colores (Asegúrate de configurarlos en el Inspector del Prefab si quieres)
     public Color colorBloqueado = Color.gray;
     public Color colorDisponible = Color.white;
-    public Color colorComprado = new Color(0.5f, 1f, 0.5f); // Verde claro
+    public Color colorComprado = new Color(0.5f, 1f, 0.5f);
 
-    public void Inicializar(Accion accion, GameUIManager manager)
+    public void Inicializar(AccionInfo accion, GameUIManager manager)
     {
         miAccion = accion;
         uiManager = manager;
@@ -26,21 +25,13 @@ public class AccionButton : MonoBehaviour
         miBoton.onClick.AddListener(() => uiManager.OnHexagonoClick(miAccion));
     }
 
-    // ESTA ES LA FUNCIÓN QUE DABA ERROR. AHORA ACEPTA 2 ARGUMENTOS.
     public void ActualizarVisual(bool desbloqueada, bool comprada)
     {
-        miBoton.interactable = true; // Siempre clickable para ver info
-
+        miBoton.interactable = true; 
         if (miImagenFondo != null)
         {
-            if (comprada)
-            {
-                miImagenFondo.color = colorComprado;
-            }
-            else
-            {
-                miImagenFondo.color = desbloqueada ? colorDisponible : colorBloqueado;
-            }
+            if (comprada) miImagenFondo.color = colorComprado;
+            else miImagenFondo.color = desbloqueada ? colorDisponible : colorBloqueado;
         }
     }
 
