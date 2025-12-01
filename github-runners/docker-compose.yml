@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  runner:
+    build: .
+    container_name: github-runner-unity
+    env_file:
+      - .env                                    # ← carga automáticamente el .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # para docker-in-docker si lo necesitas
+      - runner-work:/home/docker/_work              # persiste la carpeta Library (cache)
+    restart: unless-stopped
+    # Opcional: limita RAM/CPU si quieres
+    # mem_limit: 16g
+    # cpus: "4"
+
+volumes:
+  runner-work:
