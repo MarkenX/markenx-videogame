@@ -51,8 +51,12 @@ COPY . .
 # Carpeta donde se generará el build
 RUN mkdir -p /root/build
 
-# Instalar Unity Editor usando Unity Hub
-RUN unityhub -- --headless install --version $UNITY_VERSION --changeset d3d30d158480 --childModules $UNITY_MODULES
+# Crear un wrapper script para Unity Hub con --no-sandbox
+RUN echo '#!/bin/bash\n/opt/unityhub/unityhub --no-sandbox "$@"' > /usr/local/bin/unityhub-wrapper \
+    && chmod +x /usr/local/bin/unityhub-wrapper
+
+# Instalar Unity Editor usando Unity Hub con --no-sandbox
+RUN unityhub-wrapper -- --headless install --version $UNITY_VERSION --changeset d3d30d158480 --childModules $UNITY_MODULES
 
 # Comando por defecto para hacer build WebGL
 CMD ["/opt/unity/Editor/Unity", \
