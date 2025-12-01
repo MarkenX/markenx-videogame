@@ -8,7 +8,7 @@ jobs:
     executor:
       name: unity/ubuntu
       resource_class: large
-      editor_version: 6000.2.10f1
+      editor_version: 6000.2.0f1
       target_platform: webgl
 
     steps:
@@ -18,7 +18,7 @@ jobs:
           build-method: BuildWebGL.PerformBuild
           project-path: .
           compress: true
-          step-name: Build WebGL
+          store-artifacts: true
 
 workflows:
   version: 2
