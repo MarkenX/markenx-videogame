@@ -1,14 +1,14 @@
 version: 2.1
 
 orbs:
-  unity: game-ci/unity@1.7.1
+  unity: game-ci/unity@1.3.0
 
 jobs:
   build-webgl:
-    # Executor para WebGL (Linux optimizado con IL2CPP)
+    # Executor para WebGL
     executor:
       name: unity/ubuntu
-      resource_class: large  # 8GB+ RAM para builds grandes
+      resource_class: large  # RAM extra para IL2CPP WebGL
       editor_version: 6000.2.10f1
       target_platform: webgl
 
@@ -18,20 +18,15 @@ jobs:
           build-target: WebGL
           build-method: BuildWebGL.PerformBuild
           project-path: .
-          compress: true 
-          store-artifacts: true
-          step-name: Build WebGL
-          # Licencia online
+          compress: true
+          
+          context: unity
           unity-username-var-name: UNITY_USERNAME
           unity-password-var-name: UNITY_PASSWORD
+          step-name: Build WebGL
 
 workflows:
   version: 2
   build:
     jobs:
       - build-webgl
-        # Opcional: Filtros para branches específicas
-        # filters:
-        #   branches:
-        #     only:
-        #       - main
