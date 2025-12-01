@@ -4,7 +4,7 @@ FROM ubuntu:22.04
 # Evitar interacción en APT
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Instalar dependencias básicas
+# Instalar dependencias básicas + librerías gráficas
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
@@ -21,6 +21,15 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     gpg \
     apt-transport-https \
+    libgbm1 \
+    libnss3 \
+    libasound2 \
+    libxss1 \
+    libxshmfence1 \
+    libdrm2 \
+    libxkbcommon0 \
+    libatk-bridge2.0-0 \
+    libgtk-3-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Unity version
