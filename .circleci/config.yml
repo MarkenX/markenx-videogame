@@ -12,10 +12,10 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
 
-      # Restaurar caché de Docker (opcional para builds repetidos)
+      # Restaurar caché de Docker
       - restore_cache:
           keys:
-            - docker-layer-cache-{{ checksum "Dockerfile" }}
+            - docker-layer-cache-{{ checksum "ci/Dockerfile.unity-webgl" }}
             - docker-layer-cache-
 
       # Construir la imagen Docker con Unity + WebGL
@@ -26,7 +26,7 @@ jobs:
 
       # Guardar la capa de Docker en caché
       - save_cache:
-          key: docker-layer-cache-{{ checksum "Dockerfile" }}
+          key: docker-layer-cache-{{ checksum "ci/Dockerfile.unity-webgl" }}
           paths:
             - /var/lib/docker
 
