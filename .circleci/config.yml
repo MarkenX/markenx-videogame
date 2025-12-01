@@ -7,18 +7,22 @@ jobs:
   build-webgl:
     executor:
       name: unity/ubuntu
-      resource_class: large
-      editor_version: 6000.2.10f1
-      target_platform: webgl
+      resource_class: large # RAM para IL2CPP WebGL
+      editor_version: 6000.0.62f1 # ← La más actual: genera ubuntu-6000.0.62f1-webgl-3.2.0
+      target_platform: webgl # Optimiza para WebGL
 
     steps:
       - checkout
       - unity/build:
-          build-target: WebGL
-          build-method: BuildWebGL.PerformBuild
-          project-path: .
-          compress: true
-          step-name: Build WebGL
+          context: unity # Tu context con UNITY_ENCODED_LICENSE
+          build-target: WebGL # Requerido
+          build-method: BuildWebGL.PerformBuild # Tu script C#
+          project-path: . # Assets/ en raíz
+          compress: true # .tar.gz descargable
+          store-artifacts: true # Artefactos en CircleCI
+          return-license: true # Devuelve licencia
+          unity-license-var-name: UNITY_ENCODED_LICENSE # Para Personal offline
+          step-name: Build WebGL (6000.0.62f1)
 
 workflows:
   version: 2
