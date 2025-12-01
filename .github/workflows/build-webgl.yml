@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: buntu-latest-8-core
     environment: unity
     steps:
       - uses: actions/checkout@v4
