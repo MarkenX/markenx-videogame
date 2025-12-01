@@ -1,64 +1,51 @@
-name: Build WebGL
+name: Build WebGL + ZIP (Personal license)
 
 on:
   push:
     branches: [ ci/circleci-setup ]
 
 jobs:
-  build-and-zip:
+  build:
     runs-on: ubuntu-latest
-    name: Build WebGL → ZIP
     steps:
-      # 1. Checkout del código (incluyendo LFS)
       - uses: actions/checkout@v4
         with:
           lfs: true
 
-      # 2. Cache de Library
+      # Cache para que los siguientes builds sean 3-4× más rápidos
       - uses: actions/cache@v4
         with:
           path: Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: Library-
+          key: Library-WebGL-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: Library-WebGL-
 
-      # 3. ACTIVACIÓN DE LICENCIA
-      - name: Activate Unity Personal License
-        uses: game-ci/unity-activate@v2
-        env:
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-
-      # 4. Build WebGL
+      # Build con licencia Personal
       - name: Build WebGL
-        id: buildStep
-        uses: game-ci/unity-builder@v4  # Versión estable para Unity 6 + WebGL
+        id: build
+        uses: game-ci/unity-builder@v4
         env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           unityVersion: 6000.0.62f1
-          targetPlatform: WebGL      # Plataforma de salida
+          targetPlatform: WebGL
 
-      # 5. Comprimir build a .zip
-      - name: Comprimir build a .zip
+      # ZIP automático
+      - name: Crear ZIP
         run: |
-          cd "${{ steps.buildStep.outputs.buildPath }}"  # Path del build (e.g., build/WebGL)
-          zip -r ../WebGL_Build_${{ github.sha }}.zip .
-          echo "ZIP creado: WebGL_Build_${{ github.sha }}.zip (tamaño: $(du -sh ../WebGL_Build_${{ github.sha }}.zip))"
+          cd "${{ steps.build.outputs.buildPath }}"
+          zip -r ../WebGL_Build_${{ github.sha::8 }}.zip .
+          echo "ZIP listo → WebGL_Build_${{ github.sha::8 }}.zip"
 
-      # 6. Subir el .zip como artefacto principal
-      - name: Subir artefacto ZIP
-        uses: actions/upload-artifact@v4
+      # Subir artefactos
+      - uses: actions/upload-artifact@v4
         with:
-          name: WebGL-Build-${{ github.sha }}
+          name: WebGL-Build-${{ github.sha::8 }}.zip
           path: WebGL_Build_*.zip
-          if-no-files-found: error
           retention-days: 30
 
-      # 7. Bonus: Subir carpeta raw
-      - name: Subir carpeta WebGL raw (opcional)
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: WebGL-Files-Raw
-          path: ${{ steps.buildStep.outputs.buildPath }}
-          retention-days: 1
+          name: WebGL-Raw-Files
+          path: ${{ steps.build.outputs.buildPath }}
