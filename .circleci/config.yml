@@ -1,48 +1,69 @@
 version: 2.1
 
+orbs:
+  # Orb oficial de Game CI
+  gameci: game-ci/unity@3.1.0
+
 jobs:
   build_webgl:
     docker:
-      - image: cimg/base:stable
+      - image: unityci/editor:ubuntu-6000.2.0f1-webgl-3.1
+    resource_class: large        # ¡Importante! WebGL + IL2CPP necesita RAM
     working_directory: ~/project
+    environment:
+      BUILD_PATH: Build/WebGL
+
     steps:
       - checkout
 
-      # Configurar Docker remoto para builds de Unity
-      - setup_remote_docker:
-          docker_layer_caching: true
-
-      # Restaurar caché de Docker
-      - restore_cache:
-          keys:
-            - docker-layer-cache-{{ checksum "ci/Dockerfile.unity-webgl" }}
-            - docker-layer-cache-
-
-      # Construir la imagen Docker con Unity + WebGL
+      # 1. Activación online de licencia Personal
       - run:
-          name: Build Docker container
+          name: Activate Unity License (Online)
           command: |
-            docker build -f ci/Dockerfile.unity-webgl -t unity-webgl .
+            xvfb-run --auto-servernum \
+              /opt/unity/Editor/Unity \
+                -batchmode \
+                -nographics \
+                -username "$UNITY_EMAIL" \
+                -password "$UNITY_PASSWORD" \
+                -logFile /dev/stdout \
+                -quit || echo "License activation failed, but may continue if already activated"
 
-      # Guardar la capa de Docker en caché
-      - save_cache:
-          key: docker-layer-cache-{{ checksum "ci/Dockerfile.unity-webgl" }}
-          paths:
-            - /var/lib/docker
-
-      # Ejecutar el build dentro del contenedor
+      # 2. Build WebGL
       - run:
-          name: Run Unity WebGL Build
+          name: Build WebGL
           command: |
-            docker run --rm -v ~/project:/root/project -v ~/project/Build:/root/build unity-webgl
+            xvfb-run --auto-servernum \
+              /opt/unity/Editor/Unity \
+                -batchmode \
+                -nographics \
+                -silent-crashes \
+                -projectPath ~/project \
+                -executeMethod BuildWebGL.PerformBuild \
+                -buildTarget WebGL \
+                -logFile /dev/stdout \
+                -quit
 
-      # Guardar el build como artefacto
+      # 3. Devolver la licencia al cerrar sesión
+      - run:
+          name: Return Unity License
+          when: always
+          command: |
+            xvfb-run --auto-servernum \
+              /opt/unity/Editor/Unity \
+                -batchmode \
+                -nographics \
+                -returnlicense \
+                -logFile /dev/stdout \
+                -quit || true
+
+      # 4. Guardar artefactos
       - store_artifacts:
-          path: Build/WebGL
+          path: ~/project/Build/WebGL
           destination: WebGL_Build
 
 workflows:
   version: 2
-  build_and_store:
+  build:
     jobs:
       - build_webgl
