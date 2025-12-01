@@ -1,30 +1,51 @@
-# .circleci/config.yml  ←  Versión 100 % funcional (copia-pega)
 version: 2.1
 
+# ===================================================================
+# 1. JOB PARA GENERAR EL .ALF
+# ===================================================================
 jobs:
+  generate-alf:
+    docker:
+      - image: unityci/editor:ubuntu-6000.0.62f1-webgl-3.2.0
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Generar archivo de activación (.alf)
+          command: |
+            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
+              /opt/unity/Editor/Unity \
+              -batchmode -nographics -quit \
+              -projectPath . \
+              -createManualActivationFile \
+              -logFile /dev/stdout
+      - store_artifacts:
+          path: ~/project
+          destination: alf-file   # aquí aparecerá el archivo .alf
+
+  # ===================================================================
+  # 2. JOB NORMAL DE BUILD
+  # ===================================================================
   build-webgl:
     docker:
       - image: unityci/editor:ubuntu-6000.0.62f1-webgl-3.2.0
     resource_class: large
-    environment:
-      # Opcional: más RAM para IL2CPP
-      UNITY_PERFORMANCE_VERSION: 3.0.1
     working_directory: ~/project
 
     steps:
       - checkout
 
-      # 1. Activar licencia Personal offline
+      # Activar licencia Personal
       - run:
-          name: Activate Unity Personal License
+          name: Activar licencia Unity Personal (CI-compatible)
           command: |
-            echo "$UNITY_ENCODED_LICENSE" | base64 -d > /tmp/unity-license.ulf
+            echo "$UNITY_ENCODED_LICENSE" | base64 -d > /tmp/unity.ulf
             xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
               /opt/unity/Editor/Unity \
               -batchmode -nographics -quit -logFile /dev/stdout \
-              -manualLicenseFile /tmp/unity-license.ulf
+              -manualLicenseFile /tmp/unity.ulf
 
-      # 2. Build WebGL
+      # Build WebGL
       - run:
           name: Build WebGL
           command: |
@@ -36,13 +57,23 @@ jobs:
               -executeMethod BuildWebGL.PerformBuild \
               -logFile /dev/stdout
 
-      # 3. Guardar artefacto
+      # Guardar artefacto
       - store_artifacts:
           path: Build/WebGL
           destination: WebGL_Build
 
+# ===================================================================
+# WORKFLOWS
+# ===================================================================
 workflows:
   version: 2
-  build:
+
+  # Descomenta esta línea cuando necesites generar el .alf (solo la primera vez)
+  generate-license:
     jobs:
-      - build-webgl
+      - generate-alf
+
+  # Esta es la que tendrás siempre activa
+  # build-and-deploy:
+  #   jobs:
+  #     - build-webgl
