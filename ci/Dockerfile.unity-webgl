@@ -1,0 +1,18 @@
+FROM unityci/editor:6000.2.10f1-webgl
+
+# Copiamos proyecto
+WORKDIR /root/project
+COPY . .
+
+# Carpeta de build
+RUN mkdir -p /root/build
+
+# Ejecutar build
+CMD /opt/unity/Editor/Unity \
+    -batchmode \
+    -nographics \
+    -silent-crashes \
+    -projectPath /root/project \
+    -executeMethod BuildWebGL.PerformBuild \
+    -logFile /dev/stdout \
+    -quit
