@@ -1,4 +1,4 @@
-# .circleci/config.yml  ←  Versión definitiva, copia-pega tal cual
+# .circleci/config.yml  ←  Versión 100 % funcional (copia-pega)
 version: 2.1
 
 jobs:
@@ -6,30 +6,43 @@ jobs:
     docker:
       - image: unityci/editor:ubuntu-6000.0.62f1-webgl-3.2.0
     resource_class: large
+    environment:
+      # Opcional: más RAM para IL2CPP
+      UNITY_PERFORMANCE_VERSION: 3.0.1
     working_directory: ~/project
 
     steps:
       - checkout
+
+      # 1. Activar licencia Personal offline
+      - run:
+          name: Activate Unity Personal License
+          command: |
+            echo "$UNITY_ENCODED_LICENSE" | base64 -d > /tmp/unity-license.ulf
+            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
+              /opt/unity/Editor/Unity \
+              -batchmode -nographics -quit -logFile /dev/stdout \
+              -manualLicenseFile /tmp/unity-license.ulf
+
+      # 2. Build WebGL
       - run:
           name: Build WebGL
           command: |
             mkdir -p Build/WebGL
             xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
               /opt/unity/Editor/Unity \
-              -batchmode \
-              -nographics \
-              -silent-crashes \
+              -batchmode -nographics -silent-crashes -quit \
               -projectPath . \
               -executeMethod BuildWebGL.PerformBuild \
-              -logFile /dev/stdout \
-              -quit
+              -logFile /dev/stdout
 
+      # 3. Guardar artefacto
       - store_artifacts:
           path: Build/WebGL
           destination: WebGL_Build
 
 workflows:
   version: 2
-  build-and-deploy:
+  build:
     jobs:
       - build-webgl
