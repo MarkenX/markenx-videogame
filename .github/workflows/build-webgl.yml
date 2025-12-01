@@ -1,24 +1,23 @@
-# .github/workflows/build-webgl.yml
-name: Build WebGL
+name: Build, Test and Deploy
 
 on:
   push:
-    branches: [ci/circleci-setup]
+    branches: [ ci/circleci-setup ]
 
 jobs:
   build-and-zip:
     runs-on: ubuntu-latest
     name: Build WebGL → ZIP
     steps:
-      # 1. Descargar el código (incluyendo LFS)
+      # 1. Checkout del código (incluyendo LFS)
       - uses: actions/checkout@v4
         with:
           lfs: true
 
-      # 2. Build con game-ci
+      # 2. Build
       - name: Build WebGL
         id: buildStep
-        uses: game-ci/unity-builder@v5
+        uses: game-ci/unity-action@v2
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -26,24 +25,26 @@ jobs:
           unityVersion: 6000.0.62f1
           targetPlatform: WebGL
 
-      # 3.zip automático
+      # 3. Comprimir build a .zip
       - name: Comprimir build a .zip
         run: |
-          cd "${{ steps.buildStep.outputs.buildPath }}"
+          cd "${{ steps.buildStep.outputs.buildPath }}"  # Path del build (e.g., build/WebGL)
           zip -r ../WebGL_Build_${{ github.sha }}.zip .
-          echo "Zip creado: WebGL_Build_${{ github.sha }}.zip"
+          echo "ZIP creado: WebGL_Build_${{ github.sha }}.zip (tamaño: $(du -sh ../WebGL_Build_${{ github.sha }}.zip))"
 
-      # 4. Subir el .zip como artefacto descargable
+      # 4. Subir el .zip como artefacto principal
       - name: Subir artefacto ZIP
         uses: actions/upload-artifact@v4
         with:
           name: WebGL-Build-${{ github.sha }}
           path: WebGL_Build_*.zip
           if-no-files-found: error
+          retention-days: 30
 
-      # Bonus: también subir la carpeta descomprimida (por si alguien la quiere)
-      - name: Subir carpeta WebGL (opcional)
+      # 5. Bonus: Subir carpeta raw (descomprimida, para previews directos)
+      - name: Subir carpeta WebGL raw (opcional)
         uses: actions/upload-artifact@v4
         with:
           name: WebGL-Files-Raw
           path: ${{ steps.buildStep.outputs.buildPath }}
+          retention-days: 7  # 7 días para ahorrar espacio
