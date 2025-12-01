@@ -22,7 +22,7 @@ jobs:
       - run:
           name: Build Docker container
           command: |
-            docker build -t unity-webgl .
+            docker build -f ci/Dockerfile.unity-webgl -t unity-webgl .
 
       # Guardar la capa de Docker en caché
       - save_cache:
