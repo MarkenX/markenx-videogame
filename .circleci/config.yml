@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  unity: game-ci/unity@1.3.0
+  unity: game-ci/unity@1.3.0 # Estable para tu setup
 
 jobs:
   build-webgl:
@@ -25,3 +25,7 @@ workflows:
   build:
     jobs:
       - build-webgl
+        # Opcional: Filtros para branches
+        # filters:
+        #   branches:
+        #     only: main
