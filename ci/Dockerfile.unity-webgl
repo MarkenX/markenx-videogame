@@ -1,26 +1,50 @@
-# Base Unity Editor sin módulos
-FROM unityci/editor:6000.2.10f1
+# Base Linux con dependencias para Unity
+FROM ubuntu:22.04
 
-# Variables de entorno
-ENV UNITY_PROJECT_PATH=/root/project
-ENV BUILD_OUTPUT=/root/build
+# Evitar interacción en APT
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Instalar módulo WebGL una sola vez (capa de caché)
-RUN unityhub install-modules --version 6000.2.10f1 --module webgl
+# Instalar dependencias básicas
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    git \
+    unzip \
+    libgtk2.0-0 \
+    libglu1-mesa \
+    xvfb \
+    libpulse0 \
+    libxcursor1 \
+    libxrandr2 \
+    libxinerama1 \
+    libxi6 \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-# Carpeta del proyecto
-WORKDIR $UNITY_PROJECT_PATH
+# Unity version
+ENV UNITY_VERSION=6000.2.10f1
+ENV UNITY_MODULES=WebGL
+
+# Directorio del proyecto
+WORKDIR /root/project
+
+# Copiar proyecto
 COPY . .
 
-# Carpeta de salida
-RUN mkdir -p $BUILD_OUTPUT
+# Carpeta donde se generará el build
+RUN mkdir -p /root/build
 
-# Comando por defecto para build
-CMD /opt/unity/Editor/Unity \
-    -batchmode \
-    -nographics \
-    -silent-crashes \
-    -projectPath $UNITY_PROJECT_PATH \
-    -executeMethod BuildWebGL.PerformBuild \
-    -logFile /dev/stdout \
-    -quit
+# Descargar Unity Hub CLI y Unity Editor
+RUN wget -q https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage -O /usr/local/bin/unityhub \
+    && chmod +x /usr/local/bin/unityhub \
+    && unityhub -- --headless install --version $UNITY_VERSION --changeset d3d30d158480 --childModules $UNITY_MODULES
+
+# Comando por defecto para hacer build WebGL
+CMD ["/opt/unity/Editor/Unity", \
+     "-batchmode", \
+     "-nographics", \
+     "-silent-crashes", \
+     "-projectPath", "/root/project", \
+     "-executeMethod", "BuildWebGL.PerformBuild", \
+     "-logFile", "/dev/stdout", \
+     "-quit"]
