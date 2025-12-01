@@ -1,4 +1,4 @@
-name: Build, Test and Deploy
+name: Build WebGL
 
 on:
   push:
@@ -14,10 +14,17 @@ jobs:
         with:
           lfs: true
 
-      # 2. Build
+      # 2. Cache de Library (acelera builds repetidos)
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: Library-
+
+      # 3. Build
       - name: Build WebGL
         id: buildStep
-        uses: game-ci/unity-action@v2
+        uses: game-ci/unity-builder@v4
         env:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -25,14 +32,14 @@ jobs:
           unityVersion: 6000.0.62f1
           targetPlatform: WebGL
 
-      # 3. Comprimir build a .zip
+      # 4. Comprimir build a .zip
       - name: Comprimir build a .zip
         run: |
           cd "${{ steps.buildStep.outputs.buildPath }}"  # Path del build (e.g., build/WebGL)
           zip -r ../WebGL_Build_${{ github.sha }}.zip .
           echo "ZIP creado: WebGL_Build_${{ github.sha }}.zip (tamaño: $(du -sh ../WebGL_Build_${{ github.sha }}.zip))"
 
-      # 4. Subir el .zip como artefacto principal
+      # 5. Subir el .zip como artefacto principal
       - name: Subir artefacto ZIP
         uses: actions/upload-artifact@v4
         with:
@@ -41,7 +48,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      # 5. Bonus: Subir carpeta raw (descomprimida, para previews directos)
+      # 6. Bonus: Subir carpeta raw (descomprimida, para previews directos)
       - name: Subir carpeta WebGL raw (opcional)
         uses: actions/upload-artifact@v4
         with:
