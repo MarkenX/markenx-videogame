@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: buntu-latest-8-core-xl
+    runs-on: self-hosted
     environment: unity
     steps:
       - uses: actions/checkout@v4
