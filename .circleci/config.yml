@@ -1,69 +1,25 @@
 version: 2.1
 
 orbs:
-  # Orb oficial de Game CI
-  gameci: game-ci/unity@3.1.0
+  unity: game-ci/unity@2.1.0
 
 jobs:
-  build_webgl:
-    docker:
-      - image: unityci/editor:ubuntu-6000.2.0f1-webgl-3.1
-    resource_class: large        # ¡Importante! WebGL + IL2CPP necesita RAM
-    working_directory: ~/project
-    environment:
-      BUILD_PATH: Build/WebGL
-
+  build-webgl:
+    executor:
+      name: unity/ubuntu
+      resource_class: large
     steps:
-      - checkout
-
-      # 1. Activación online de licencia Personal
-      - run:
-          name: Activate Unity License (Online)
-          command: |
-            xvfb-run --auto-servernum \
-              /opt/unity/Editor/Unity \
-                -batchmode \
-                -nographics \
-                -username "$UNITY_EMAIL" \
-                -password "$UNITY_PASSWORD" \
-                -logFile /dev/stdout \
-                -quit || echo "License activation failed, but may continue if already activated"
-
-      # 2. Build WebGL
-      - run:
-          name: Build WebGL
-          command: |
-            xvfb-run --auto-servernum \
-              /opt/unity/Editor/Unity \
-                -batchmode \
-                -nographics \
-                -silent-crashes \
-                -projectPath ~/project \
-                -executeMethod BuildWebGL.PerformBuild \
-                -buildTarget WebGL \
-                -logFile /dev/stdout \
-                -quit
-
-      # 3. Devolver la licencia al cerrar sesión
-      - run:
-          name: Return Unity License
-          when: always
-          command: |
-            xvfb-run --auto-servernum \
-              /opt/unity/Editor/Unity \
-                -batchmode \
-                -nographics \
-                -returnlicense \
-                -logFile /dev/stdout \
-                -quit || true
-
-      # 4. Guardar artefactos
-      - store_artifacts:
-          path: ~/project/Build/WebGL
-          destination: WebGL_Build
+      - unity/build:
+          context: unity
+          editor_version: 6000.2.10f1
+          target_platform: webgl
+          build-method: BuildWebGL.PerformBuild
+          store_artifacts: true
+          compress_artifacts: true
+          return-license: true
 
 workflows:
   version: 2
   build:
     jobs:
-      - build_webgl
+      - build-webgl
