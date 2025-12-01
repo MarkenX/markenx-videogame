@@ -2,16 +2,16 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Todo como root
+# Instala todo lo necesario
 RUN apt-get update && apt-get install -y \
-    curl jq wget unzip git sudo ca-certificates \
+    curl jq wget unzip git sudo ca-certificates git-lfs \
     && rm -rf /var/lib/apt/lists/*
 
-# Crea usuario docker con sudo sin contraseña
+# Crea usuario docker
 RUN useradd -m -s /bin/bash docker \
     && echo 'docker ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# Descarga e instala el runner como root
+# Descarga e instala el runner
 ARG RUNNER_VERSION=2.317.0
 WORKDIR /home/docker
 RUN mkdir actions-runner && cd actions-runner \
@@ -20,15 +20,14 @@ RUN mkdir actions-runner && cd actions-runner \
     && rm ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
     && ./bin/installdependencies.sh
 
-# CAMBIO CLAVE: cambia propietario de toda la carpeta actions-runner al usuario docker
+# Cambia propietario (para que el usuario docker pueda escribir)
 RUN chown -R docker:docker /home/docker/actions-runner
 
-# Copia entrypoint y hazlo ejecutable
+# Copia entrypoint
 COPY entrypoint.sh /home/docker/entrypoint.sh
 RUN chmod +x /home/docker/entrypoint.sh \
     && chown docker:docker /home/docker/entrypoint.sh
 
-# Cambia a usuario docker
 USER docker
 WORKDIR /home/docker
 
