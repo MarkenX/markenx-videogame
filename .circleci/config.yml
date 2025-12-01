@@ -7,11 +7,12 @@ jobs:
   build-webgl:
     executor:
       name: unity/ubuntu
-      resource_class: large
+      resource_class: large  # Para RAM extra en WebGL + IL2CPP
     steps:
       - unity/build:
           context: unity
           editor_version: 6000.2.10f1
+          build-target: WebGL
           target_platform: webgl
           build-method: BuildWebGL.PerformBuild
           store_artifacts: true
