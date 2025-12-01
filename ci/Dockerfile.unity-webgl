@@ -4,7 +4,7 @@ FROM ubuntu:22.04
 # Evitar interacción en APT
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Instalar dependencias básicas (SOLO fuse3 y libfuse2)
+# Instalar dependencias básicas
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
@@ -19,8 +19,6 @@ RUN apt-get update && apt-get install -y \
     libxinerama1 \
     libxi6 \
     ca-certificates \
-    fuse3 \
-    libfuse2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Unity version
@@ -36,10 +34,16 @@ COPY . .
 # Carpeta donde se generará el build
 RUN mkdir -p /root/build
 
-# Descargar Unity Hub CLI y Unity Editor
-RUN wget -q https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage -O /usr/local/bin/unityhub \
-    && chmod +x /usr/local/bin/unityhub \
-    && unityhub -- --headless install --version $UNITY_VERSION --changeset d3d30d158480 --childModules $UNITY_MODULES
+# Descargar y extraer Unity Hub AppImage SIN FUSE
+RUN wget -q https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage -O /tmp/unityhub.AppImage \
+    && chmod +x /tmp/unityhub.AppImage \
+    && cd /tmp && ./unityhub.AppImage --appimage-extract \
+    && mv /tmp/squashfs-root /opt/unityhub \
+    && ln -s /opt/unityhub/AppRun /usr/local/bin/unityhub \
+    && rm /tmp/unityhub.AppImage
+
+# Instalar Unity Editor usando Unity Hub
+RUN unityhub -- --headless install --version $UNITY_VERSION --changeset d3d30d158480 --childModules $UNITY_MODULES
 
 # Comando por defecto para hacer build WebGL
 CMD ["/opt/unity/Editor/Unity", \
